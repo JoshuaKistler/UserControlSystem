@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const userRoutes = require('./routes/userRoutes'); // Hier importierst du die Routen
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,11 +16,13 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB verbunden'))
   .catch((err) => console.log('Datenbankfehler: ', err));
 
-// API-Routen importieren
-const userRoutes = require('./routes/userRoutes');
+// Verwende den Präfix '/api/users' für alle Routen in userRoutes
 app.use('/api/users', userRoutes);
 
 // Server starten
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
+
+
+
