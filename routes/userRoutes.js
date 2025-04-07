@@ -1,6 +1,8 @@
 const express = require('express');
 const User = require('../models/user');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
+
 
 // Alle Benutzer abrufen
 router.get('/', async (req, res) => {
@@ -58,5 +60,33 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
+router.post('/', 
+    [
+      // Validierung der Eingabefelder
+      body('name').isLength({ min: 3 }).withMessage('Name muss mindestens 3 Zeichen lang sein'),
+      body('email').isEmail().withMessage('Bitte eine gültige E-Mail-Adresse angeben'),
+      body('role').isIn(['admin', 'user']).withMessage('Rolle muss entweder "admin" oder "user" sein')
+    ], 
+    async (req, res) => {
+      // Überprüfen, ob Fehler bei der Validierung vorliegen
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });  // Fehler zurückgeben
+      }
+  
+      // Wenn keine Fehler vorliegen, die Eingabedaten extrahieren
+      const { name, email, role } = req.body;
+  
+      const newUser = new User({ name, email, role });
+  
+      try {
+        // Benutzer speichern
+        const savedUser = await newUser.save();
+        res.status(201).json(savedUser);  // Erfolgreich zurückgeben
+      } catch (err) {
+        res.status(400).json({ message: err.message });  // Fehler bei Speicherung
+      }
+    }
+  );
+  
 module.exports = router;
